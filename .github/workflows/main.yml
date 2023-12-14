@@ -1,0 +1,38 @@
+name: Secret Detection Check
+
+on:
+  pull_request:
+    branches:
+      - main # Adjust to your branch name
+
+jobs:
+  detect-secrets:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x' # Replace with your Python version
+
+      - name: Install detect-secrets
+        run: |
+          pip install detect-secrets
+
+      - name: Run detect-secrets
+        id: detect
+        run: |
+          detect-secrets scan --all-files
+
+      - name: Check result and take action
+        run: |
+          result=$?
+          if [ $result -ne 0 ]; then
+            echo "Secrets detected. Pull request check failed."
+            exit 1
+          else
+            echo "No secrets detected. Pull request check passed."
+          fi
